@@ -6,11 +6,14 @@ import com.example.demoJPA.service.CarService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
+import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
+import org.springframework.web.bind.annotation.CookieValue;
 @RestController
 @RequestMapping("/api")
 public class CarController {
@@ -18,7 +21,7 @@ public class CarController {
     private CarService carService;
 
     @GetMapping("/cars")
-    public ResponseEntity<Object> getCars(@RequestHeader(value = "darkmode", required = false) boolean darkMode) {
+    public ResponseEntity<Object> getCars(@CookieValue(value = "darkmode", defaultValue = "false") boolean darkMode) {
         List<Car> cars = carService.getAllCars();
         CarDTO[] carDTOs = cars.stream()
                 .map(car -> {
@@ -40,10 +43,12 @@ public class CarController {
     }
 
     @PutMapping("/dark-mode")
-    public ResponseEntity<Void> setDarkMode(@RequestBody DarkModeDTO darkModeDTO, HttpServletResponse response) {
+    public ResponseEntity<Void> setDarkMode(@RequestBody DarkModeDTO darkModeDTO) {
         boolean darkMode = darkModeDTO.isDarkMode();
-        response.setHeader("Set-Cookie", "darkmode=" + darkMode);
 
-        return ResponseEntity.noContent().build();
+        HttpHeaders responseHeaders = new HttpHeaders();
+        responseHeaders.add("Set-Cookie", "darkmode=" + darkMode);
+
+        return ResponseEntity.noContent().headers(responseHeaders).build();
     }
 }
